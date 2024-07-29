@@ -15,11 +15,11 @@ RUN apt update && \
     libboost-all-dev \
     libgoogle-glog-dev
 
-COPY install/abseil /tmp/install/abseil
-RUN /tmp/install/abseil/install_abseil.sh
+#COPY install/abseil /tmp/install/abseil
+#RUN /tmp/install/abseil/install_abseil.sh
 
-COPY install/protobuf /tmp/install/protobuf
-RUN /tmp/install/protobuf/install_protobuf.sh
+#COPY install/protobuf /tmp/install/protobuf
+#RUN /tmp/install/protobuf/install_protobuf.sh
 
 
 WORKDIR /work
