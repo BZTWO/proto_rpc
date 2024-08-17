@@ -5,8 +5,7 @@ struct tcp_info;
 namespace network {
 
 class InetAddress;
-
-///
+ 
 /// Wrapper of socket file descriptor.
 ///
 /// It closes the sockfd when desctructs.
