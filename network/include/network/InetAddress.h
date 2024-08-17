@@ -7,11 +7,11 @@ namespace network {
 namespace sockets {
 const struct sockaddr *sockaddr_cast(const struct sockaddr_in6 *addr);
 }
-
 ///
 /// Wrapper of sockaddr_in.
 ///
 /// This is an POD interface class.
+/// 主要用于表示一个网络地址
 class InetAddress {
  public:
   /// Constructs an endpoint with given port number.

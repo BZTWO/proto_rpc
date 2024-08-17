@@ -75,12 +75,14 @@ InetAddress::InetAddress(const std::string &ip, uint16_t portArg, bool ipv6) {
   }
 }
 
+// 将 sockaddr 结构（包含 IP 地址和端口）转换为字符串格式
 std::string InetAddress::toIpPort() const {
   char buf[64] = "";
   sockets::toIpPort(buf, sizeof buf, getSockAddr());
   return buf;
 }
 
+// 将 sockaddr 结构（IP）转换为字符串格式
 std::string InetAddress::toIp() const {
   char buf[64] = "";
   sockets::toIp(buf, sizeof buf, getSockAddr());
@@ -96,8 +98,9 @@ uint16_t InetAddress::port() const {
   return sockets::networkToHost16(portNetEndian());
 }
 
+// 线程局部变量
 static __thread char t_resolveBuffer[64 * 1024];
-
+// 将主机名（hostname）解析为 IP 地址
 bool InetAddress::resolve(const std::string &hostname, InetAddress *out) {
   assert(out != NULL);
   struct hostent hent;
@@ -119,6 +122,7 @@ bool InetAddress::resolve(const std::string &hostname, InetAddress *out) {
   }
 }
 
+//设置网卡接口索引
 void InetAddress::setScopeId(uint32_t scope_id) {
   if (family() == AF_INET6) {
     addr6_.sin6_scope_id = scope_id;
