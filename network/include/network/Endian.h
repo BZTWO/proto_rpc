@@ -6,6 +6,7 @@
 namespace network {
 namespace sockets {
 
+
 inline uint64_t hostToNetwork64(uint64_t host64) { return htobe64(host64); }
 
 inline uint32_t hostToNetwork32(uint32_t host32) { return htobe32(host32); }
