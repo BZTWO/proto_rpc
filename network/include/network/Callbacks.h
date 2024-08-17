@@ -10,7 +10,7 @@ using std::placeholders::_2;
 using std::placeholders::_3;
 
 // should really belong to base/Types.h, but <memory> is not included there.
-
+// 返回由智能指针管理的裸指针
 template <typename T>
 inline T *get_pointer(const std::shared_ptr<T> &ptr) {
   return ptr.get();
@@ -31,7 +31,7 @@ typedef std::function<void(const TcpConnectionPtr &)> ConnectionCallback;
 typedef std::function<void(const TcpConnectionPtr &)> CloseCallback;
 typedef std::function<void(const TcpConnectionPtr &)> WriteCompleteCallback;
 typedef std::function<void(const TcpConnectionPtr &, size_t)>
-    HighWaterMarkCallback;
+    HighWaterMarkCallback;  // 当发送缓冲区达到预设的高水位标记时触发
 
 // the data has been read to (buf, len)
 typedef std::function<void(const TcpConnectionPtr &, Buffer *)> MessageCallback;
