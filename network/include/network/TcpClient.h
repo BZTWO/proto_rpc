@@ -55,7 +55,7 @@ class TcpClient {
   /// Not thread safe, but in loop
   void removeConnection(const TcpConnectionPtr &conn);
 
-  EventLoop *loop_;
+  EventLoop *loop_;         /// 管理网络事件和任务调度
   ConnectorPtr connector_;  // avoid revealing Connector
   const std::string name_;
   ConnectionCallback connectionCallback_;

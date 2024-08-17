@@ -66,7 +66,7 @@ TcpClient::~TcpClient() {
     conn = connection_;
   }
   if (conn) {
-    assert(loop_ == conn->getLoop());
+    assert(loop_ == conn->getLoop());       /// 确保连接对象和客户端在同一个事件循环线程中
     // FIXME: not 100% safe, if we are in different thread
     CloseCallback cb = std::bind(&detail::removeConnection, loop_, _1);
     loop_->runInLoop(std::bind(&TcpConnection::setCloseCallback, conn, cb));
