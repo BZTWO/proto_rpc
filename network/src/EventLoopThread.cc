@@ -24,7 +24,7 @@ EventLoop *EventLoopThread::startLoop() {
   // assert(!thread_.started());
   // thread_.start();
   thread_ = std::make_unique<std::thread>(
-      std::bind(&EventLoopThread::threadFunc, this));
+      std::bind(&EventLoopThread::threadFunc, this));  // thread init and start
   EventLoop *loop = NULL;
   {
     std::unique_lock<std::mutex> lock(mutex_);
