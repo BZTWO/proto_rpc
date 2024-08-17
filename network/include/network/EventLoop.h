@@ -20,6 +20,7 @@ class Poller;
 /// Reactor, at most one per thread.
 ///
 /// This is an interface class, so don't expose too much details.
+/// 处理I/O事件、回调函数和其他异步任务，确保事件在同一线程中进行处理
 class EventLoop {
  public:
   typedef std::function<void()> Functor;
@@ -92,13 +93,13 @@ class EventLoop {
   std::atomic<bool> quit_;
   bool eventHandling_;          /* atomic */
   bool callingPendingFunctors_; /* atomic */
-  int64_t iteration_;
+  int64_t iteration_;           /* 记录事件循环的迭代次数 */
   pid_t threadId_;
   std::unique_ptr<Poller> poller_;
-  int wakeupFd_;
+  int wakeupFd_;                /* 唤醒事件循环fd */
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
-  std::unique_ptr<Channel> wakeupChannel_;
+  std::unique_ptr<Channel> wakeupChannel_;   /* 管理 wakeupFd_ */
   boost::any context_;
 
   // scratch variables

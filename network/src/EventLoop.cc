@@ -16,7 +16,7 @@
 using namespace network;
 
 namespace network {
-static thread_local EventLoop *t_loopInThisThread = nullptr;
+static thread_local EventLoop *t_loopInThisThread = nullptr;   // 线程局部存储
 
 const int kPollTimeMs = 10000;
 
@@ -84,7 +84,7 @@ void EventLoop::loop() {
     eventHandling_ = true;
     for (Channel *channel : activeChannels_) {
       currentActiveChannel_ = channel;
-      currentActiveChannel_->handleEvent();
+      currentActiveChannel_->handleEvent(); //
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
@@ -107,18 +107,18 @@ void EventLoop::quit() {
 
 void EventLoop::runInLoop(Functor cb) {
   if (isInLoopThread()) {
-    cb();
+    cb();                       // 如果当前线程就是事件循环线程，则直接执行回调
   } else {
     queueInLoop(std::move(cb));
   }
 }
-
+// 插入尾部
 void EventLoop::queueInLoop(Functor cb) {
   {
     std::unique_lock<std::mutex> lock(mutex_);
     pendingFunctors_.push_back(std::move(cb));
   }
-
+  // 如果当前线程不是事件循环线程，或者正在处理待处理回调函数，则唤醒事件循环线程
   if (!isInLoopThread() || callingPendingFunctors_) {
     wakeup();
   }
@@ -156,7 +156,7 @@ void EventLoop::abortNotInLoopThread() {
   // LOG(FATAL) << "Event loop is not in the current thread, threadID: "
   //            << threadId_ << ", current threadID = " << getThreadId();
 }
-
+// 写入数据来唤醒事件循环线程
 void EventLoop::wakeup() {
   uint64_t one = 1;
   ssize_t n = sockets::write(wakeupFd_, &one, sizeof one);
@@ -164,7 +164,7 @@ void EventLoop::wakeup() {
     LOG(ERROR) << "EventLoop::wakeup() writes " << n << " bytes instead of 8";
   }
 }
-
+// 处理并清空 eventfd 文件描述符中的数据，确保事件循环能够正确响应唤醒信号
 void EventLoop::handleRead() {
   uint64_t one = 1;
   ssize_t n = sockets::read(wakeupFd_, &one, sizeof one);
@@ -173,7 +173,7 @@ void EventLoop::handleRead() {
                << " bytes instead of 8";
   }
 }
-
+//执行排队回调
 void EventLoop::doPendingFunctors() {
   std::vector<Functor> functors;
   callingPendingFunctors_ = true;
