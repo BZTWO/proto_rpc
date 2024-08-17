@@ -63,6 +63,7 @@ const struct sockaddr_in6 *sockets::sockaddr_in6_cast(
       static_cast<const void *>(addr));
 }
 
+//将套接字设置为非阻塞模式并确保在执行 exec 系列函数时自动关闭
 int sockets::createNonblockingOrDie(sa_family_t family) {
 #if VALGRIND
   int sockfd = ::socket(family, SOCK_STREAM, IPPROTO_TCP);
@@ -140,13 +141,13 @@ int sockets::accept(int sockfd, struct sockaddr_in6 *addr) {
 
 int sockets::connect(int sockfd, const struct sockaddr *addr) {
   return ::connect(sockfd, addr,
-                   static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
+                   static_cast<socklen_t>(sizeof(struct sockaddr_in6)));  // 假设地址总是 sockaddr_in6 类型
 }
-
+///从文件描述符中读取数据到指定的缓冲区,适用于单个缓冲区的数据读取
 ssize_t sockets::read(int sockfd, void *buf, size_t count) {
   return ::read(sockfd, buf, count);
 }
-
+///从文件描述符中读取数据到多个缓冲区,将数据分散到多个缓冲区中，高效地处理网络数据流
 ssize_t sockets::readv(int sockfd, const struct iovec *iov, int iovcnt) {
   return ::readv(sockfd, iov, iovcnt);
 }
@@ -169,6 +170,7 @@ void sockets::close(int sockfd) {
 //   }
 // }
 
+// 将 sockaddr 结构（包含 IP 地址和端口）转换为字符串格式
 void sockets::toIpPort(char *buf, size_t size, const struct sockaddr *addr) {
   if (addr->sa_family == AF_INET6) {
     buf[0] = '[';
@@ -188,6 +190,7 @@ void sockets::toIpPort(char *buf, size_t size, const struct sockaddr *addr) {
   snprintf(buf + end, size - end, ":%u", port);
 }
 
+// 将 sockaddr 结构（IP）转换为字符串格式
 void sockets::toIp(char *buf, size_t size, const struct sockaddr *addr) {
   if (addr->sa_family == AF_INET) {
     assert(size >= INET_ADDRSTRLEN);
@@ -199,7 +202,7 @@ void sockets::toIp(char *buf, size_t size, const struct sockaddr *addr) {
     ::inet_ntop(AF_INET6, &addr6->sin6_addr, buf, static_cast<socklen_t>(size));
   }
 }
-
+//将 IP 地址和端口号填充到 sockaddr_in
 void sockets::fromIpPort(const char *ip, uint16_t port,
                          struct sockaddr_in *addr) {
   addr->sin_family = AF_INET;
@@ -208,7 +211,7 @@ void sockets::fromIpPort(const char *ip, uint16_t port,
     LOG(ERROR) << "sockets::fromIpPort";
   }
 }
-
+//将 IP 地址和端口号填充到 sockaddr_in6
 void sockets::fromIpPort(const char *ip, uint16_t port,
                          struct sockaddr_in6 *addr) {
   addr->sin6_family = AF_INET6;
@@ -217,7 +220,7 @@ void sockets::fromIpPort(const char *ip, uint16_t port,
     LOG(ERROR) << "sockets::fromIpPort";
   }
 }
-
+//获取与指定套接字相关的错误码
 int sockets::getSocketError(int sockfd) {
   int optval;
   socklen_t optlen = static_cast<socklen_t>(sizeof optval);
@@ -238,7 +241,7 @@ struct sockaddr_in6 sockets::getLocalAddr(int sockfd) {
   }
   return localaddr;
 }
-
+//获取套接字的对端地址
 struct sockaddr_in6 sockets::getPeerAddr(int sockfd) {
   struct sockaddr_in6 peeraddr;
   memset(&peeraddr, 0, sizeof(peeraddr));
@@ -248,7 +251,7 @@ struct sockaddr_in6 sockets::getPeerAddr(int sockfd) {
   }
   return peeraddr;
 }
-
+//判断一个套接字是否与自己进行连接
 bool sockets::isSelfConnect(int sockfd) {
   struct sockaddr_in6 localaddr = getLocalAddr(sockfd);
   struct sockaddr_in6 peeraddr = getPeerAddr(sockfd);
