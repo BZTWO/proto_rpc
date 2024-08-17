@@ -30,6 +30,8 @@ const int kDeleted = 2;
 }  // namespace
 
 namespace network {
+// EPOLL_CLOEXEC 表示在执行 exec() 系统调用时关闭这个 epoll 文件描述符。
+//这有助于避免文件描述符泄漏到子进程中。
 Poller::Poller(EventLoop *loop)
     : ownerLoop_(loop),
       epollfd_(::epoll_create1(EPOLL_CLOEXEC)),
@@ -40,7 +42,7 @@ Poller::Poller(EventLoop *loop)
 }
 
 Poller::~Poller() { ::close(epollfd_); }
-
+// 添加到活跃列表
 void Poller::poll(int timeoutMs, ChannelList *activeChannels) {
   LOG(INFO) << "fd total count " << channels_.size();
   int numEvents = ::epoll_wait(epollfd_, &*events_.begin(),
@@ -50,6 +52,7 @@ void Poller::poll(int timeoutMs, ChannelList *activeChannels) {
   if (numEvents > 0) {
     LOG(INFO) << numEvents << " events happened";
     fillActiveChannels(numEvents, activeChannels);
+    // 如果所有的 epoll_event 都被用上了，则数组会扩容
     if (size_t(numEvents) == events_.size()) {
       events_.resize(events_.size() * 2);
     }
@@ -63,23 +66,22 @@ void Poller::poll(int timeoutMs, ChannelList *activeChannels) {
     }
   }
 }
-
-void Poller::fillActiveChannels(int numEvents,
-                                ChannelList *activeChannels) const {
+//轮询 添加到活跃列表
+void Poller::fillActiveChannels(int numEvents, ChannelList *activeChannels) const {
   assert(size_t(numEvents) <= events_.size());
   for (int i = 0; i < numEvents; ++i) {
-    Channel *channel = static_cast<Channel *>(events_[i].data.ptr);
+    Channel *channel = static_cast<Channel *>(events_[i].data.ptr);  // 获取与该事件关联的 Channel 对象
 #ifndef NDEBUG
     int fd = channel->fd();
     ChannelMap::const_iterator it = channels_.find(fd);
     assert(it != channels_.end());
     assert(it->second == channel);
 #endif
-    channel->set_revents(events_[i].events);
+    channel->set_revents(events_[i].events);  // 将 epoll_event 的事件类型存储到 Channel 对象中
     activeChannels->push_back(channel);
   }
 }
-
+//更新红黑树
 void Poller::updateChannel(Channel *channel) {
   Poller::assertInLoopThread();
   const int index = channel->index();
@@ -114,7 +116,7 @@ void Poller::updateChannel(Channel *channel) {
     }
   }
 }
-
+//从映射中删除 channel
 void Poller::removeChannel(Channel *channel) {
   Poller::assertInLoopThread();
   int fd = channel->fd();
@@ -133,7 +135,7 @@ void Poller::removeChannel(Channel *channel) {
   }
   channel->set_index(kNew);
 }
-
+//根据 operation 在红黑树上操作，更新红黑树
 void Poller::update(int operation, Channel *channel) {
   struct epoll_event event;
   memset(&event, 0, sizeof(event));
@@ -164,7 +166,7 @@ const char *Poller::operationToString(int op) {
       return "Unknown Operation";
   }
 }
-
+// 检查在映射中是否存在 fd
 bool Poller::hasChannel(Channel *channel) const {
   assertInLoopThread();
   ChannelMap::const_iterator it = channels_.find(channel->fd());
