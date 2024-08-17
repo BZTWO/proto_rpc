@@ -11,6 +11,7 @@ const char Buffer::kCRLF[] = "\r\n";
 const size_t Buffer::kCheapPrepend;
 const size_t Buffer::kInitialSize;
 
+//从文件描述符 fd 中读取数据到 Buffer 对象中
 ssize_t Buffer::readFd(int fd, int *savedErrno) {
   // saved an ioctl()/FIONREAD call to tell how much to read
   // const size_t writable = writableBytes();

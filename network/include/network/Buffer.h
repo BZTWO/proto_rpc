@@ -13,7 +13,7 @@
 namespace network {
 
 /// A buffer class modeled after org.jboss.netty.buffer.ChannelBuffer
-///
+/// 缓冲区的数据流动模型
 /// @code
 /// +-------------------+------------------+------------------+
 /// | prependable bytes |  readable bytes  |  writable bytes  |
@@ -24,8 +24,8 @@ namespace network {
 /// @endcode
 class Buffer {
  public:
-  static const size_t kCheapPrepend = 8;
-  static const size_t kInitialSize = 1024 * 4;
+  static const size_t kCheapPrepend = 8;         // 预留的头部空间大小
+  static const size_t kInitialSize = 1024 * 4;   // 缓冲区的初始大小
 
   explicit Buffer(size_t initialSize = kInitialSize)
       : buffer_(kCheapPrepend + initialSize),
@@ -44,7 +44,7 @@ class Buffer {
   size_t writableBytes() const { return buffer_.size() - writerIndex_; }
 
   size_t prependableBytes() const { return readerIndex_; }
-
+  //begin() + readerIndex_;
   const char *peek() const { return begin() + readerIndex_; }
 
   // retrieve returns void, to prevent
@@ -71,14 +71,14 @@ class Buffer {
     readerIndex_ = kCheapPrepend;
     writerIndex_ = kCheapPrepend;
   }
-
+  // read 并设置已读
   std::string retrieveAllAsString() {
     return retrieveAsString(readableBytes());
   }
 
   std::string retrieveAsString(size_t len) {
     assert(len <= readableBytes());
-    std::string result(peek(), len);
+    std::string result(peek(), len);   // copy
     retrieve(len);
     return result;
   }
@@ -105,12 +105,12 @@ class Buffer {
   char *beginWrite() { return begin() + writerIndex_; }
 
   const char *beginWrite() const { return begin() + writerIndex_; }
-
+  //写入
   void hasWritten(size_t len) {
     assert(len <= writableBytes());
     writerIndex_ += len;
   }
-
+  //撤销
   void unwrite(size_t len) {
     assert(len <= readableBytes());
     writerIndex_ -= len;
@@ -228,7 +228,7 @@ class Buffer {
   }
 
   void prependInt8(int8_t x) { prepend(&x, sizeof x); }
-
+  //读空间头部插入
   void prepend(const void * /*restrict*/ data, size_t len) {
     assert(len <= prependableBytes());
     readerIndex_ -= len;
@@ -242,19 +242,21 @@ class Buffer {
   ///
   /// It may implement with readv(2)
   /// @return result of read(2), @c errno is saved
+
   ssize_t readFd(int fd, int *savedErrno);
 
  private:
   char *begin() { return &*buffer_.begin(); }
 
   const char *begin() const { return &*buffer_.begin(); }
-
+  // 申请新空间 len
   void makeSpace(size_t len) {
     if (writableBytes() + prependableBytes() < len + kCheapPrepend) {
       // FIXME: move readable data
       buffer_.resize(writerIndex_ + len);
     } else {
       // move readable data to the front, make space inside buffer
+      // 预留空间和read之间有空间时
       assert(kCheapPrepend < readerIndex_);
       size_t readable = readableBytes();
       std::copy(begin() + readerIndex_, begin() + writerIndex_,
@@ -270,7 +272,7 @@ class Buffer {
   size_t readerIndex_;
   size_t writerIndex_;
 
-  static const char kCRLF[];
+  static const char kCRLF[];  // 将数据分隔成行或在发送数据时添加行结束符
 };
 
 }  // namespace network
