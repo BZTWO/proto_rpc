@@ -73,27 +73,34 @@ class TcpServer {
 
  private:
   /// Not thread safe, but in loop
+  /// 在接收到新的连接时被调用，用于处理新连接
   void newConnection(int sockfd, const InetAddress &peerAddr);
+
   /// Thread safe.
+  /// 安全地从连接映射中删除一个连接
   void removeConnection(const TcpConnectionPtr &conn);
+
   /// Not thread safe, but in loop
+  /// 在事件循环的线程中执行，用于从连接映射中删除一个连接
   void removeConnectionInLoop(const TcpConnectionPtr &conn);
 
-  typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
+  typedef std::map<std::string, TcpConnectionPtr> ConnectionMap; // 一个映射
 
   EventLoop *loop_;  // the acceptor loop
-  const std::string ipPort_;
-  const std::string name_;
-  std::unique_ptr<Acceptor> acceptor_;  // avoid revealing Acceptor
-  std::shared_ptr<EventLoopThreadPool> threadPool_;
-  ConnectionCallback connectionCallback_;
-  MessageCallback messageCallback_;
-  WriteCompleteCallback writeCompleteCallback_;
-  ThreadInitCallback threadInitCallback_;
+  const std::string ipPort_;  // 服务器监听的 IP 和端口
+  const std::string name_;  // 服务器的名称
+  std::unique_ptr<Acceptor> acceptor_;  // avoid revealing Acceptor  接受新的连接
+  std::shared_ptr<EventLoopThreadPool> threadPool_;  // 管理事件循环线程池，用于处理连接的 I/O 事件
+
+  ConnectionCallback connectionCallback_;  // 连接回调函数，用于在新连接建立时调用
+  MessageCallback messageCallback_;  // 消息回调函数，用于在接收到消息时调用
+  WriteCompleteCallback writeCompleteCallback_;  // 写完成回调函数，用于在数据写入完成时调用
+  ThreadInitCallback threadInitCallback_; // 线程初始化回调函数，用于在线程池中的线程初始化时调用
+
   std::atomic<bool> started_;
   // always in loop thread
   int nextConnId_;
-  ConnectionMap connections_;
+  ConnectionMap connections_;  // 下一个连接的 ID
 };
 
 }  // namespace network

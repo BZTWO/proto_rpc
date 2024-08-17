@@ -57,6 +57,7 @@ void TcpServer::start() {
   loop_->runInLoop(std::bind(&Acceptor::listen, get_pointer(acceptor_)));
 }
 
+
 void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
   loop_->assertInLoopThread();
   EventLoop *ioLoop = threadPool_->getNextLoop();
@@ -80,6 +81,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress &peerAddr) {
       std::bind(&TcpServer::removeConnection, this, _1));  // FIXME: unsafe
   ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }
+
 
 void TcpServer::removeConnection(const TcpConnectionPtr &conn) {
   // FIXME: unsafe
