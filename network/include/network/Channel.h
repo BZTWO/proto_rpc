@@ -16,6 +16,7 @@ class EventLoop;
 /// This class doesn't own the file descriptor.
 /// The file descriptor could be a socket,
 /// an eventfd, a timerfd, or a signalfd
+/// Channel 不负责创建或管理客户端的连接逻辑，它的职责是监听套接字上的事件
 class Channel {
  public:
   enum EventType {
@@ -30,7 +31,7 @@ class Channel {
   Channel(EventLoop *loop, int fd);
   ~Channel();
 
-  void handleEvent();
+  void handleEvent();  // 事件处理
   void setReadCallback(EventCallback cb) { readCallback_ = std::move(cb); }
   void setWriteCallback(EventCallback cb) { writeCallback_ = std::move(cb); }
   void setCloseCallback(EventCallback cb) { closeCallback_ = std::move(cb); }
@@ -84,7 +85,7 @@ class Channel {
   const int fd_;
   int events_;
   int revents_;  // it's the received event types of epoll or poll
-  int index_;    // used by Poller.
+  int index_;    // 注册顺序或位置 used by Poller.
 
   std::weak_ptr<void> tie_;
   std::atomic<bool> event_handling_;
