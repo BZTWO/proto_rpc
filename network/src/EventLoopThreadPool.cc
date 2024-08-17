@@ -34,6 +34,7 @@ void EventLoopThreadPool::start(const ThreadInitCallback &cb) {
     loops_.push_back(t->startLoop());
   }
   if (numThreads_ == 0 && cb) {
+    //没有创建额外的工作线程,并且提供了回调函数
     cb(baseLoop_);
   }
 }
@@ -53,7 +54,7 @@ EventLoop *EventLoopThreadPool::getNextLoop() {
   }
   return loop;
 }
-
+// 每个客户端或连接生成一个固定的事件循环，确保相同的哈希值总是得到相同的 EventLoop
 EventLoop *EventLoopThreadPool::getLoopForHash(size_t hashCode) {
   baseLoop_->assertInLoopThread();
   EventLoop *loop = baseLoop_;
