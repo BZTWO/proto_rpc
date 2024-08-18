@@ -63,7 +63,7 @@ const struct sockaddr_in6 *sockets::sockaddr_in6_cast(
       static_cast<const void *>(addr));
 }
 
-//将套接字设置为非阻塞模式并确保在执行 exec 系列函数时自动关闭
+//创建套接字为非阻塞模式并确保在执行 exec 系列函数时自动关闭
 int sockets::createNonblockingOrDie(sa_family_t family) {
 #if VALGRIND
   int sockfd = ::socket(family, SOCK_STREAM, IPPROTO_TCP);
