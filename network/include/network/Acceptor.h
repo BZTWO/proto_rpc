@@ -41,7 +41,7 @@ class Acceptor {
   Channel acceptChannel_;
   NewConnectionCallback newConnectionCallback_;
   bool listening_;
-  int idleFd_;
+  int idleFd_;   // 备用的文件描述符，用于处理文件描述符耗尽的情况
 };
 
 }  // namespace network
