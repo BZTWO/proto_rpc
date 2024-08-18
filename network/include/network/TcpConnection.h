@@ -21,6 +21,7 @@ class Socket;
 /// TCP connection, for both client and server usage.
 ///
 /// This is an interface class, so don't expose too much details.
+/// 管理 TCP 连接的抽象类
 class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
  public:
   /// Constructs a TcpConnection with a connected sockfd
@@ -68,7 +69,9 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
     connectionCallback_ = cb;
   }
 
-  void setMessageCallback(const MessageCallback &cb) { messageCallback_ = cb; }
+  void setMessageCallback(const MessageCallback &cb) { 
+    messageCallback_ = cb; 
+  }
 
   void setWriteCompleteCallback(const WriteCompleteCallback &cb) {
     writeCompleteCallback_ = cb;
