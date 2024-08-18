@@ -164,7 +164,7 @@ void Connector::handleError() {
     retry(sockfd);
   }
 }
-
+// 连接失败时执行重试
 void Connector::retry(int sockfd) {
   sockets::close(sockfd);
   setState(kDisconnected);
