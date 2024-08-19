@@ -83,6 +83,7 @@ class EventLoop {
  private:
   void abortNotInLoopThread();
   void handleRead();  // waked up
+  //执行排队回调
   void doPendingFunctors();
 
   void printActiveChannels() const;  // DEBUG
@@ -94,7 +95,7 @@ class EventLoop {
   bool eventHandling_;          /* atomic */
   bool callingPendingFunctors_; /* atomic */
   int64_t iteration_;           /* 记录事件循环的迭代次数 */
-  pid_t threadId_;
+  pid_t threadId_;              /* 事件循环线程 id */
   std::unique_ptr<Poller> poller_;
   int wakeupFd_;                /* 唤醒事件循环fd */
   // unlike in TimerQueue, which is an internal class,
