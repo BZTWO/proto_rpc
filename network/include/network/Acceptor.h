@@ -20,7 +20,8 @@ class Acceptor {
 
   Acceptor(EventLoop *loop, const InetAddress &listenAddr, bool reuseport);
   ~Acceptor();
-
+  
+  // 设置回调
   void setNewConnectionCallback(const NewConnectionCallback &cb) {
     newConnectionCallback_ = cb;
   }
