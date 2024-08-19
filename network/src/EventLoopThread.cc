@@ -50,7 +50,7 @@ void EventLoopThread::threadFunc() {
     cv_.notify_all();
   }
 
-  loop.loop();
+  loop.loop();   // 开始循环
   // assert(exiting_);
   std::unique_lock<std::mutex> lock(mutex_);
   loop_ = NULL;
