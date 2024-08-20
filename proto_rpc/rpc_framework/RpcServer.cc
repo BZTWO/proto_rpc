@@ -16,6 +16,7 @@ RpcServer::RpcServer(EventLoop *loop, const InetAddress &listenAddr)
 }
 
 void RpcServer::registerService(google::protobuf::Service *service) {
+  // GetDescriptor 返回描述该服务的 ServiceDescriptor 对象
   const google::protobuf::ServiceDescriptor *desc = service->GetDescriptor();
   services_[desc->full_name()] = service;
 }
@@ -28,7 +29,7 @@ void RpcServer::onConnection(const TcpConnectionPtr &conn) {
             << (conn->connected() ? "UP" : "DOWN");
   if (conn->connected()) {
     RpcChannelPtr channel(new RpcChannel(conn));
-    channel->setServices(&services_);
+    channel->setServices(&services_);             // 传递
     conn->setMessageCallback(
         std::bind(&RpcChannel::onMessage, get_pointer(channel), _1, _2));
     conn->setContext(channel);
