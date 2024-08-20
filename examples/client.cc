@@ -29,7 +29,7 @@ class RpcClient {
     client_.setMessageCallback(
         std::bind(&RpcChannel::onMessage, get_pointer(channel_), _1, _2));
   }
-
+  // 发送 request 到服务器
   void SetMonitorInfo(const monitor::TestRequest &request) {
     monitor::TestResponse *response = new monitor::TestResponse();
 
@@ -55,7 +55,7 @@ class RpcClient {
   EventLoop *loop_;
   TcpClient client_;
   RpcChannelPtr channel_;
-  monitor::TestService::Stub stub_;
+  monitor::TestService::Stub stub_;   // 用于调用 RPC 服务方法
 };
 
 int main(int argc, char *argv[]) {
