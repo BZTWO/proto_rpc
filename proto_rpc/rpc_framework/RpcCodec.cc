@@ -10,6 +10,7 @@
 using namespace network;
 
 namespace network {
+  
 void ProtoRpcCodec::send(const TcpConnectionPtr &conn,
                          const ::google::protobuf::Message &message) {
   Buffer buf;
@@ -20,7 +21,7 @@ void ProtoRpcCodec::send(const TcpConnectionPtr &conn,
 void ProtoRpcCodec::onMessage(const TcpConnectionPtr &conn, Buffer *buf) {
   while (buf->readableBytes() >=
          static_cast<uint32_t>(kMinMessageLen + kHeaderLen)) {
-    const int32_t len = buf->peekInt32();
+    const int32_t len = buf->peekInt32();  // 头部读取长度
     if (len > kMaxMessageLen || len < kMinMessageLen) {
       // errorCallback_(conn, buf, receiveTime, kInvalidLength);
       break;
@@ -55,6 +56,9 @@ bool ProtoRpcCodec::parseFromBuffer(const void *buf, int len,
 int ProtoRpcCodec::serializeToBuffer(const google::protobuf::Message &message,
                                      Buffer *buf) {
 #if GOOGLE_PROTOBUF_VERSION > 3009002
+  // 如果 Protobuf 的版本高于 3.9.2
+  // 则调用 ByteSizeLong() 方法获取消息的字节数，保证处理大于 2GB 的消息 
+  // 获取序列化之后的字节大小
   int byte_size = google::protobuf::internal::ToIntSize(message.ByteSizeLong());
 #else
   int byte_size = message.ByteSize();
@@ -115,7 +119,7 @@ int32_t ProtoRpcCodec::asInt32(const char *buf) {
   ::memcpy(&be32, buf, sizeof(be32));
   return sockets::networkToHost32(be32);
 }
-
+// 计算校验和
 int32_t ProtoRpcCodec::checksum(const void *buf, int len) {
   return static_cast<int32_t>(
       ::adler32(1, static_cast<const Bytef *>(buf), len));
