@@ -85,8 +85,8 @@ void TcpConnection::sendInLoop(const std::string &message) {
 
 void TcpConnection::sendInLoop(const void *data, size_t len) {
   loop_->assertInLoopThread();
-  ssize_t nwrote = 0;
-  size_t remaining = len;
+  ssize_t nwrote = 0;          // 实际写入的字节数
+  size_t remaining = len;      // 剩余要写入的数据长度
   bool faultError = false;
   if (state_ == kDisconnected) {
     LOG(INFO) << "disconnected, give up writing";
@@ -308,7 +308,7 @@ void TcpConnection::handleClose() {
   setState(kDisconnected);
   channel_->disableAll();
 
-  TcpConnectionPtr guardThis(shared_from_this());
+  TcpConnectionPtr guardThis(shared_from_this());   // 防止在处理过程中该对象被销毁
   connectionCallback_(guardThis);
   // must be the last line
   closeCallback_(guardThis);
