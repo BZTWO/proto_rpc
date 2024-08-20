@@ -1,6 +1,6 @@
 syntax = "proto3";
 package monitor;
-option cc_generic_services = true;
+option cc_generic_services = true;   //这会生成一些额外的接口和代码，以便更容易地实现和处理服务端和客户端的通用操作（比如服务注册和调用）
 
 message TestRequest { 
   string name = 1; 
@@ -13,5 +13,5 @@ message TestResponse {
 }
 
 service TestService { 
-  rpc MonitorInfo(TestRequest) returns (TestResponse){} 
+  rpc MonitorInfo(TestRequest) returns (TestResponse){}   // 一个 RPC 服务
 }
