@@ -31,18 +31,18 @@ RpcChannel::~RpcChannel() {
   }
 }
 
-void RpcChannel::CallMethod(const ::google::protobuf::MethodDescriptor *method,
-                            google::protobuf::RpcController *controller,
-                            const ::google::protobuf::Message *request,
-                            ::google::protobuf::Message *response,
-                            ::google::protobuf::Closure *done) {
+void RpcChannel::CallMethod(const ::google::protobuf::MethodDescriptor  *method,      // 要调用的具体 RPC 方法
+                                  ::google::protobuf::RpcController     *controller,  // 管理 RPC 调用的状态和信息
+                            const ::google::protobuf::Message           *request,     // RPC 方法的请求参数
+                                  ::google::protobuf::Message           *response,    // 存储来自服务器端的响应
+                                  ::google::protobuf::Closure           *done) {      // 服务器处理完请求后，回调函数将被调用
   RpcMessage message;
   message.set_type(REQUEST);
-  int64_t id = id_.fetch_add(1) + 1;
+  int64_t id = id_.fetch_add(1) + 1;                      // 生成一个全局唯一的请求 ID
   message.set_id(id);
-  message.set_service(method->service()->full_name());
-  message.set_method(method->name());
-  message.set_request(request->SerializeAsString());
+  message.set_service(method->service()->full_name());    // 获取该方法所属服务的完整名称
+  message.set_method(method->name());                     // 获取被调用方法的名称
+  message.set_request(request->SerializeAsString());      // 请求对象序列化为字符串
 
   OutstandingCall out = {response, done};
   {
@@ -85,10 +85,10 @@ void RpcChannel::handle_response_msg(const RpcMessagePtr &messagePtr) {
   if (out.response) {
     std::unique_ptr<google::protobuf::Message> d(out.response);
     if (!message.response().empty()) {
-      out.response->ParseFromString(message.response());
+      out.response->ParseFromString(message.response());    // 将消息体解析到 response 对象中
     }
     if (out.done) {
-      out.done->Run();
+      out.done->Run();    // RPC 调用已经完成，并执行用户提供的回调函数
     }
   }
 }
@@ -103,21 +103,20 @@ void RpcChannel::handle_request_msg(const TcpConnectionPtr &conn,
     if (it != services_->end()) {
       google::protobuf::Service *service = it->second;
       assert(service != NULL);
-      const google::protobuf::ServiceDescriptor *desc =
-          service->GetDescriptor();
-      const google::protobuf::MethodDescriptor *method =
-          desc->FindMethodByName(message.method());
+      const google::protobuf::ServiceDescriptor *desc = service->GetDescriptor();
+      const google::protobuf::MethodDescriptor *method = desc->FindMethodByName(message.method());
+      
       if (method) {
         std::unique_ptr<google::protobuf::Message> request(
-            service->GetRequestPrototype(method).New());
+            service->GetRequestPrototype(method).New());   // 获取当前 RPC 方法的请求消息原型
         if (request->ParseFromString(message.request())) {
           google::protobuf::Message *response =
-              service->GetResponsePrototype(method).New();
+              service->GetResponsePrototype(method).New(); // 用于存储服务器生成的响应数据
           // response is deleted in doneCallback
           int64_t id = message.id();
           service->CallMethod(
               method, NULL, request.get(), response,
-              NewCallback(this, &RpcChannel::doneCallback, response, id));
+              NewCallback(this, &RpcChannel::doneCallback, response, id));  // 处理请求
           error = NO_ERROR;
         } else {
           error = INVALID_REQUEST;
@@ -136,7 +135,7 @@ void RpcChannel::handle_request_msg(const TcpConnectionPtr &conn,
     response.set_type(RESPONSE);
     response.set_id(message.id());
     response.set_error(error);
-    codec_.send(conn_, response);
+    codec_.send(conn_, response);  // // 通过 codec_ 发送回客户端
   }
 }
 
