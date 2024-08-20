@@ -15,15 +15,16 @@ namespace monitor {
 
 class TestServiceImpl : public TestService {
  public:
-  virtual void MonitorInfo(::google::protobuf::RpcController *controller,
-                           const ::monitor::TestRequest *request,
-                           ::monitor::TestResponse *response,
-                           ::google::protobuf::Closure *done) {
+  // 一个 RPC 服务
+  virtual void MonitorInfo(::google::protobuf::RpcController *controller,   // 控制 RPC 的执行
+                           const ::monitor::TestRequest *request,           // 接收从客户端发送的请求数据
+                           ::monitor::TestResponse *response,               // 设置要发送回客户端的响应数据
+                           ::google::protobuf::Closure *done) {             // 异步通知 RPC 框架操作已经完成
     LOG(INFO) << " req:\n" << request->DebugString();
     response->set_status(true);
     std::string c = "hight_" + std::to_string(request->count());
     response->set_cpu_info(c);
-    done->Run();
+    done->Run();   // 服务器已经准备好发送响应给客户端，整个 RPC 请求的生命周期即将结束
   }
 };
 
@@ -39,5 +40,5 @@ int main(int argc, char *argv[]) {
   server.registerService(&impl);
   server.start();
   loop.loop();
-  google::protobuf::ShutdownProtobufLibrary();
+  google::protobuf::ShutdownProtobufLibrary();   // 清理库的资源
 }
